@@ -9,7 +9,7 @@
  * Copyright (c) 2021 www.cseotools.com
  * Released under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
   
- * Use this script with proper credit so don't remove footer credit of our website and for more detail visit www.technicalarp.com website for more scripts.
+ * Use this script with proper credit so don't remove footer credit of our website and for more detail visit www.cseotools.com website for more scripts.
 
  * Also If you want to give some suggestions or want some modification or anything related to script then visit our website and contact us anytime
 
