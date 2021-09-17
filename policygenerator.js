@@ -2,7 +2,7 @@
  * Updated Script!
  * Thanks for taking interest in this script
 
- * For more information visit: https://www.technicalarp.com/
+ * For more information visit: https://www.cseotools.com/
  * NOTE: Installation and usage are posted on our website, kindly visit website and search for privacy policy generator Script or
    disclaimer generator or even terms and conditions generator script.
  
