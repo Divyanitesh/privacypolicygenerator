@@ -6,7 +6,7 @@
  * NOTE: Installation and usage are posted on our website, kindly visit website and search for privacy policy generator Script or
    disclaimer generator or even terms and conditions generator script.
  
- * Copyright (c) 2021 www.technicalarp.com
+ * Copyright (c) 2021 www.cseotools.com
  * Released under the Creative Commons Attribution-ShareAlike 3.0 Unported License.
   
  * Use this script with proper credit so don't remove footer credit of our website and for more detail visit www.technicalarp.com website for more scripts.
