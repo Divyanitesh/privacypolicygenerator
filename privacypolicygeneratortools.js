@@ -1,4 +1,4 @@
-//<![CDATA[
+<script type="text/javascript">
     (function () {
         var SCROLL_TIME = 200;
         var SCROLL_GRANULARITY = 20;
@@ -306,6 +306,227 @@ require_visible="require_visible" ' + checked + ' data-value-source="multi"/>' +
         updateSections();
         updateState();
 
+        var w = {
+            body_idx_prefix: "body-",
+            title_idx_prefix: "title-",
+            body_class: "wizard-steps-body-item",
+            title_class: "wizard-steps-title-item",
+            active_class: "active",
+            enabled_class: "enabled",
+            disabled_class: "disabled",
+            validation_error_class: "validation-error",
+            error_message_class: "error-message",
+            back_button: "#wlg_back",
+            next_button: "#wlg_next",
+            submit_button: "#wlg_submit",
+            form: "#wlg_form",
+            first: 1,
+            last: 1,
+            current: 1,
+
+            _hideStep: function (idx) {
+                var t = this;
+                [].forEach.call(document.querySelectorAll("." + t.body_class + "." + t.body_idx_prefix + idx),
+                    function (el) {
+                        removeClass(el, t.active_class);
+                        hide(el);
+                    });
+                [].forEach.call(document.querySelectorAll("." + t.title_class + "." + t.title_idx_prefix + idx),
+                    function (el) {
+                        removeClass(el, t.active_class);
+                    });
+            },
+
+            showStep: function (idx) {
+                if ((idx < this.first) || (idx > this.last)) {
+                    return;
+                }
+                this._hideStep(this.current);
+                this.current = idx;
+                var t = this;
+                [].forEach.call(document.querySelectorAll("." + t.body_class + "." + t.body_idx_prefix + idx),
+                    function (el) {
+                        show(el);
+                        addClass(el, t.active_class);
+                    });
+                [].forEach.call(document.querySelectorAll("." + t.title_class + "." + t.title_idx_prefix + idx),
+                    function (el) {
+                        addClass(el, t.active_class);
+                    });
+
+                function __updateButton(btn, disable) {
+                    if (btn) {
+                        btn.disabled = disable;
+                        if (disable) {
+                            removeClass(btn, this.enabled_class);
+                            addClass(btn, this.disabled_class);
+                        } else {
+                            addClass(btn, this.enabled_class);
+                            removeClass(btn, this.disabled_class);
+                        }
+                    }
+                }
+
+                __updateButton(this.back_button, this.current == this.first);
+                __updateButton(this.next_button, this.current == this.last);
+                if (this.submit_button) {
+                    if (this.current == this.last) {
+                        removeClass(this.submit_button, this.hidden_class);
+                        show(this.submit_button);
+                        addClass(this.submit_button, this.active_class);
+                    } else {
+                        removeClass(this.submit_button, this.active_class);
+                        hide(this.submit_button);
+                        addClass(this.submit_button, this.hidden_class);
+                    }
+                }
+                scrollToSelector("#wlg_form", SCROLL_TIME, SCROLL_GRANULARITY);
+            },
+
+            _validate: function () {
+                var t = this;
+                var passed = true;
+
+                function __remove(e) {
+                    [].forEach.call(document.querySelectorAll("." + t.validation_error_class), function (eError) {
+                        eError.removeEventListener("click", __remove);
+                        removeClass(eError, t.validation_error_class);
+                        [].forEach.call(eError.querySelectorAll("." + t.error_message_class),
+                            function (eMsg) {
+                                hide(eMsg);
+                            });
+                    });
+                }
+
+                [].forEach.call(document.querySelectorAll("." + t.body_class + "." + t.body_idx_prefix + t.current),
+                    function (el) {
+                        var failedNames = [];
+                        [].forEach.call(el.querySelectorAll("[require_visible]"), function (eInner) {
+                            var thisPassed = true;
+                            if (!isVisible(eInner)) {
+                                return;
+                            }
+                            if (eInner.matches("input[type='checkbox'],input[type='radio']")) {
+                                var v = getRadioValue(eInner.name, false);
+                                if ((v === false) || ((typeof(v) == "object") && (v.length < 1))) {
+                                    thisPassed = false;
+                                }
+                            } else if (eInner.matches("input[type='email']")) {
+                                var v = eInner.value;
+                                if (typeof(v) == "undefined") {
+                                    thisPassed = false;
+                                } else {
+                                    if ((v.indexOf("@") < 0) || ((v.indexOf("@") != v.lastIndexOf("@")))) {
+                                        thisPassed = false;
+                                    }
+                                }
+                            } else {
+                                var v = eInner.value;
+                                if ((typeof(v) == "undefined") || (String(v).length < 1)) {
+                                    thisPassed = false;
+                                }
+                            }
+                            if (!thisPassed) {
+                                passed = false;
+                                if (failedNames.indexOf(eInner.name) < 0) {
+                                    failedNames.push(eInner.name);
+                                }
+                            }
+                        });
+                        for (var nameIdx in failedNames) {
+                            var name = failedNames[nameIdx];
+                            var l = name.length;
+                            if (name.substring(l - 2, l) == "[]") {
+                                name = name.substring(0, l - 2);
+                            }
+                            [].forEach.call(el.querySelectorAll("[control_id='" + name + "']"),
+                                function (eError) {
+                                    addClass(eError, t.validation_error_class);
+                                    eError.addEventListener("click", __remove);
+                                    [].forEach.call(eError.querySelectorAll("." + t.error_message_class),
+                                        function (eMsg) {
+                                            show(eMsg);
+                                        });
+                                });
+                        }
+                    }
+                );
+
+                return passed;
+            },
+
+            next: function () {
+                if (this._validate()) {
+                    this.showStep(this.current + 1);
+                }
+            },
+
+            back: function () {
+                this.showStep(this.current - 1);
+            },
+
+            submit: function (e) {
+                if (typeof e != "undefined") {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                if (this._validate()) {
+                    this.form.submit();
+                }
+            },
+
+            init: function () {
+                var t = this;
+
+                function __get_el(s) {
+                    if (typeof(s) == "string") {
+                        return document.querySelector(s);
+                    }
+                    return s;
+                }
+
+                this.back_button = __get_el(this.back_button);
+                this.next_button = __get_el(this.next_button);
+                this.submit_button = __get_el(this.submit_button);
+                this.form = __get_el(this.form);
+                if (this.back_button) {
+                    this.back_button.addEventListener("click", function (e) {
+                        t.back();
+                    });
+                }
+                if (this.next_button) {
+                    this.next_button.addEventListener("click", function (e) {
+                        t.next();
+                    });
+                }
+                if (this.submit_button) {
+                    this.submit_button.addEventListener("click", function (e) {
+                        t.submit(e);
+                    });
+                }
+                [].forEach.call(document.querySelectorAll("." + this.body_class), function (el) {
+                    var idx = hasClassPrefix(el, t.body_idx_prefix);
+                    if (idx !== false) {
+                        if (idx < t.first) {
+                            t.first = idx;
+                            t.current = idx;
+                        }
+                        if (idx > t.last) {
+                            t.last = idx;
+                        }
+                        hide(el);
+                    }
+                });
+                [].forEach.call(document.querySelectorAll("." + this.error_message_class),
+                    function (eMsg) {
+                        hide(eMsg);
+                    });
+                [].forEach.call(document.querySelectorAll("." + this.title_class), function (el) {
+                    removeClass(el, t.active_class);
+                });
+                this.showStep(this.first);
+            }
+        };
 
         var scrollTimeout = null;
 
@@ -368,8 +589,6 @@ require_visible="require_visible" ' + checked + ' data-value-source="multi"/>' +
             }
         }
 
-
-
         w.init();
         var FORM = document.querySelector("#wlg_form");
 
@@ -385,20 +604,4 @@ require_visible="require_visible" ' + checked + ' data-value-source="multi"/>' +
         show(FORM);
     })
     ();
-
-function copyToClipboard(element) {
-		//Copied to clipboard. You can paste your generated policy now (Control+V or CMD+V or right-click > Paste).
-		 $('#copybtn').text('Copied to clipboard.');
-	     i = document.createElement('textarea');
-		 i.id = "copyData";
-		 i.value = $(element).text();
-       	 document.body.appendChild(i);
-		 i.select();
-		 document.execCommand('copy');
-		 document.body.removeChild(i);
-		 setTimeout( function(){
-			 $('#copybtn').text('Copy text to clipboard')
-		 }, 5000);
-}
-
-//]]>
+</script> </div>
